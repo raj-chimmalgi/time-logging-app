@@ -1,13 +1,34 @@
 import React from 'react'
+import {v4 as uuidv4} from 'uuid'
 import * as helpers from './helpers.js'
 
 class TimersDashboard extends React.Component {
+  state = {
+    timers: [
+      {
+        title: 'Practice squat',
+        project: 'Gym chores',
+        id: uuidv4(),
+        elapsed: 5456099,
+        runningSince: Date.now()
+      },
+      {
+        title: 'Bake squash',
+        project: 'Kitchen chores',
+        id: uuidv4(),
+        elapsed: 1273998,
+        runningSince: null
+      }
+    ]
+  }
   render(){
     return(
       <div className="ui three column centered grid">
         <div className="column">
-          <EditableTimerList />
-          <ToggleableTimerForm isOpen={true} />
+          <EditableTimerList 
+            timers = {this.state.timers}
+          />
+          <ToggleableTimerForm isOpen={false} />
         </div>
       </div>
     )
@@ -16,30 +37,30 @@ class TimersDashboard extends React.Component {
 
 class EditableTimerList extends React.Component {
   render(){
+    const timers = this.props.timers.map(timer => (
+      <EditableTimer 
+        key={timer.id}
+        id={timer.id}
+        title={timer.title}
+        project={timer.project}
+        elapsed={timer.elapsed}
+        runningSince={timer.runningSince}
+      />
+    ))
     return(
       <div id="timers">
-        <EditableTimer 
-          title='Practice React'
-          project='Web Domination'
-          elapsed='8986300'
-          runningSince={null}
-          editFormOpen={false}
-        />
-        <EditableTimer 
-          title='Learn extreme ironing'
-          project='World Domination'
-          elapsed='3890985'
-          runingSince={null}
-          editFormOpen={true}
-        />
+        {timers}
       </div>
     )
   }
 }
 
 class EditableTimer extends React.Component {
+  state = {
+    editFormOpen: false
+  }
   render(){
-    if(this.props.editFormOpen){
+    if(this.state.editFormOpen){
       return(
         <TimerForm 
           title={this.props.title}
@@ -59,19 +80,39 @@ class EditableTimer extends React.Component {
 }
 
 class TimerForm extends React.Component {
+  state = {
+    title: this.props.title || '',
+    project: this.props.project || ''
+  }
+
+  handleTitleChange = (event) => {
+    this.setState({title: event.target.value})
+  }
+
+  handleProjectChange = (event) => {
+    this.setState({project: event.target.value})
+  }
   render(){
-    const submitText = this.props.title? 'Update' : 'Create'
+    const submitText = this.state.title? 'Update' : 'Create'
     return(
       <div className='ui centered card'>
         <div className='content'>
           <div className='ui form'>
             <div className='field'>
               <label>Title</label>
-              <input type='text' defaultValue={this.props.title} />
+              <input 
+                type='text' 
+                value={this.state.title} 
+                onChange={this.handleTitleChange}
+              />
             </div>
             <div className='field'>
               <label>Project</label>
-              <input type='text' defaultValue={this.props.project} />
+              <input 
+                type='text' 
+                value={this.state.project} 
+                onChange={this.handleProjectChange}
+              />
             </div>            
             <div className='ui two bottom attached buttons'>
               <button className='ui basic blue button'>
@@ -89,14 +130,25 @@ class TimerForm extends React.Component {
 }
 
 class ToggleableTimerForm extends React.Component {
+  state = {
+    isOpen: false
+  }
+
+  handleFormOpen = () => {
+    this.setState({ isOpen: true })
+  }
+
   render(){
-    if (this.props.isOpen){
+    if (this.state.isOpen){
       return (<TimerForm/>)
     }
 
     return (
       <div className='ui basic content center aligned segment'>
-        <button className='ui basic button icon'>
+        <button 
+          className='ui basic button icon' 
+          onClick={this.handleFormOpen}
+        >
           <i className='plus icon' />
         </button>
       </div>  
